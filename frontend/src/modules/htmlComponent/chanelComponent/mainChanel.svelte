@@ -7,7 +7,7 @@
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
     import Members from '../../../modules/admin.svelte';
-    import SvgEdit from "../svgComponent/svgEdit.svelte";
+    import SvgEdit from "../svgComponent/svgParams.svelte";
     import SvgTrash from "../svgComponent/svgTrash.svelte";
     import SvgClose from "../svgComponent/svgClose.svelte";
 
@@ -98,6 +98,17 @@
 		socket.on('deletedRoom', (receivedRoom : string) => {
 			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
 		});
+
+        socket.on('newRight', (receivedRight : any) => {
+            console.log('newRight ->', {receivedRight});
+            rooms = rooms.map((room : any) => {
+                if (room.name === receivedRight.roomName) {
+                    room.admin = receivedRight.admin;
+                }
+                return room;
+            });
+            rooms = rooms;
+        });
     })
 
     function createRoom() {
@@ -193,7 +204,7 @@
                                     </button>
                                     <div>
                                         {#if room.admin === true}
-                                            <button on:click={() => {admin = room.name; modalAdmin = true}}>
+                                            <button on:click={() => {console.log('test'); admin = room.name; modalAdmin = true}}>
                                                 <SvgEdit />
                                             </button>
                                         {/if}

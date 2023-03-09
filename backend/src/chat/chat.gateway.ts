@@ -404,11 +404,57 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		this.Client.forEach((elem) => {
-			// console.log(elem.user.id_user);
-			// console.log(data.member.id_user);
-			if (elem.user.id_user === data.member.id_user) {
-				elem.client.emit('OP', data.roomName);
+			if (elem.user.id === data.member.id_user) {
+				elem.client.emit('newRight', {
+					roomName : data.roomName,
+					admin : true,
+					id_user : data.member.id_user,
+				});
 			}
+		});
+		client.emit('newRight', {
+			roomName : data.roomName,
+			admin : true,
+			id_user : data.member.id_user,
+		});
+	}
+
+	@SubscribeMessage('DEOP')
+	async handleDEOP(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const relation = await this.prisma.roomToUser.findMany({
+			where: {
+				id_user : data.member.id_user,
+				id_room : Room.id,
+			}
+		});
+		await this.prisma.roomToUser.update({
+			where :{
+				id : relation[0].id
+			},
+			data : {
+				admin : false,
+			},
+		});
+		this.Client.forEach((elem) => {
+			if (elem.user.id === data.member.id_user) {
+				elem.client.emit('newRight', {
+					roomName : data.roomName,
+					admin : false,
+					id_user : data.member.id_user,
+				});
+			}
+		});
+		client.emit('newRight', {
+			roomName : data.roomName,
+			admin : false,
+			id_user : data.member.id_user,
 		});
 	}
 

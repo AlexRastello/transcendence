@@ -26,6 +26,7 @@
 
 </script>
 
+
 <div class="flex flex-row justify-between w-full bg-white rounded text-2xl pl-4 ">
     <h1>{room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}</h1>
     <div>
